@@ -8,7 +8,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['username']) && isset($
     
     if ($username === 'admin@123' && $password === '1234') {
         $_SESSION['username'] = $username; 
-        header("Location: dashboard.php"); 
+        header("Location: specific.php"); 
         exit();
     } else {
         $error_message = "Invalid username or password!";

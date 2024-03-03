@@ -1,15 +1,12 @@
 <?php
 include 'config.php'; 
 
-
-$sql = "SELECT district, COUNT(*) AS kits_given FROM data GROUP BY district";
+$sql = "SELECT district, COUNT(*) AS kits_given FROM households GROUP BY district";
 $result = $conn->query($sql);
 
 $data = array();
 
-
 $districtCounts = array();
-
 
 if ($result->num_rows > 0) {
     while ($row = $result->fetch_assoc()) {
@@ -18,15 +15,12 @@ if ($result->num_rows > 0) {
             "kits_given" => intval($row['kits_given']) 
         );
 
-      
         $districtCounts[$row['district']] = intval($row['kits_given']);
     }
 }
 
-
-$sqlDistinctDistricts = "SELECT DISTINCT district FROM data";
+$sqlDistinctDistricts = "SELECT DISTINCT district FROM households";
 $resultDistinctDistricts = $conn->query($sqlDistinctDistricts);
-
 
 if ($resultDistinctDistricts->num_rows > 0) {
     while ($row = $resultDistinctDistricts->fetch_assoc()) {
@@ -104,7 +98,6 @@ $data_json = json_encode($data);
         }
 
         #orgChart {
-          
             width: 100%;
         }
         .logout-btn {
@@ -134,10 +127,8 @@ $data_json = json_encode($data);
         <canvas id="orgChart" width="400" height="200"></canvas>
 
         <script>
-          
             var data = <?php echo $data_json; ?>;
 
-            
             var districts = data.map(function(item) {
                 return item.district;
             });
@@ -146,12 +137,10 @@ $data_json = json_encode($data);
                 return item.kits_given;
             });
 
-           
             districts.sort(function(a, b) {
                 return a.localeCompare(b, undefined, {numeric: true, sensitivity: 'base'});
             });
 
-         
             var ctx = document.getElementById('orgChart').getContext('2d');
             var orgChart = new Chart(ctx, {
                 type: 'bar',

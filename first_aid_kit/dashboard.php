@@ -170,7 +170,7 @@
 
                     if (isset($_GET['search'])) {
                         $search = $_GET['search'];
-                        $sql = "SELECT * FROM data WHERE 
+                        $sql = "SELECT * FROM households WHERE 
                                 name LIKE '%$search%' OR 
                                 email LIKE '%$search%' OR 
                                 gender LIKE '%$search%' OR 
@@ -183,7 +183,7 @@
                                 hasCprTraining LIKE '%$search%' OR 
                                 date LIKE '%$search%'";
                     } else {
-                        $sql = "SELECT * FROM data";
+                        $sql = "SELECT * FROM households";
                     }
 
                     $result = $conn->query($sql);
@@ -197,7 +197,7 @@
                                     <td>{$row['mobileNo']}</td>
                                     <td>{$row['familyMembers']}</td>
                                     <td>{$row['district']}</td>
-                                    <td>{$row['date']}</td>
+                                    <td>" . (isset($row['date']) ? $row['date'] : '') . "</td>
                                     <td><a href=\"dashboard.php?delete={$row['id']}\">Delete</a></td>
                                 </tr>";
                         }
@@ -207,7 +207,7 @@
 
                     if (isset($_GET['delete'])) {
                         $deleteId = $_GET['delete'];
-                        $deleteSql = "DELETE FROM data WHERE id = $deleteId";
+                        $deleteSql = "DELETE FROM households WHERE id = $deleteId";
 
                         if ($conn->query($deleteSql) === TRUE) {
                             echo "<script>alert('Record deleted successfully');</script>";

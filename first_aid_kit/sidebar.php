@@ -65,12 +65,14 @@
 <body>
     <div class="sidebar">
         <div class="sidebar-header">
-            <img src="BWF_logo.jpeg" alt="BWF Logo">
+            <a href="specific.php">
+                <img src="BWF_logo.jpeg" alt="BWF Logo">
+            </a>
         </div>
         
         <ul class="tabs">
             
-            <li><a href="dashboard.php">Dashboard</a></li>
+            <!-- <li><a href="dashboard.php">Dashboard</a></li> -->
             <li><a href="specific.php">Kits Delivered</a></li> 
             <li><a href="export.php">Data / Export CSV</a></li>
             <li><a href="org.php">Graph</a></li>

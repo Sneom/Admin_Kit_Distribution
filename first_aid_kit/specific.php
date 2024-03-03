@@ -4,7 +4,7 @@ include 'config.php';
 $search = isset($_GET['search']) ? $_GET['search'] : '';
 $date = isset($_GET['date']) ? $_GET['date'] : date("Y-m-d");
 
-$sql = "SELECT district, COUNT(*) AS kits_given FROM data WHERE DATE(date) = '$date'";
+$sql = "SELECT district, COUNT(*) AS kits_given FROM households WHERE DATE(published_date) = '$date'";
 
 if (!empty($search)) {
     $sql .= " AND (district LIKE '%$search%')";
