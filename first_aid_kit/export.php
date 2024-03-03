@@ -1,6 +1,18 @@
 <?php
 include 'config.php';
 
+// Check if download button is clicked
+if (isset($_POST['downloadUserPhotos'])) {
+    downloadUserPhotos();
+    exit;
+}
+
+// Check if download button is clicked
+if (isset($_POST['downloadSignaturePhotos'])) {
+    downloadSignaturePhotos();
+    exit;
+}
+
 // Function to download images
 function downloadImages($imageUrls, $folderName) {
     // Create folder if not exists
@@ -48,38 +60,40 @@ function downloadImages($imageUrls, $folderName) {
     unlink($zipFile);
 }
 
-// Check if download button is clicked
-if (isset($_POST['downloadUserPhotos'])) {
+// Function to download user photos
+function downloadUserPhotos() {
+    global $conn;
     $sql = "SELECT userPhoto FROM households";
     $result = $conn->query($sql);
-
-    $imageUrls = array();
-    while ($row = $result->fetch_assoc()) {
-        if (!empty($row['userPhoto'])) {
-            // Extract filename from the URL and add to the list
-            $imageUrls[] = basename($row['userPhoto']);
+    if ($result) {
+        $imageUrls = array();
+        while ($row = $result->fetch_assoc()) {
+            if (!empty($row['userPhoto'])) {
+                $imageUrls[] = $row['userPhoto'];
+            }
         }
+        downloadImages($imageUrls, 'user_photos');
+    } else {
+        echo "Error executing query: " . $conn->error;
     }
-
-    downloadImages($imageUrls, 'user_photos');
-    exit;
 }
 
-// Check if download button is clicked
-if (isset($_POST['downloadSignaturePhotos'])) {
+// Function to download signature photos
+function downloadSignaturePhotos() {
+    global $conn;
     $sql = "SELECT signature FROM households";
     $result = $conn->query($sql);
-
-    $imageUrls = array();
-    while ($row = $result->fetch_assoc()) {
-        if (!empty($row['signature'])) {
-            // Extract filename from the URL and add to the list
-            $imageUrls[] = basename($row['signature']);
+    if ($result) {
+        $imageUrls = array();
+        while ($row = $result->fetch_assoc()) {
+            if (!empty($row['signature'])) {
+                $imageUrls[] = $row['signature'];
+            }
         }
+        downloadImages($imageUrls, 'signature_photos');
+    } else {
+        echo "Error executing query: " . $conn->error;
     }
-
-    downloadImages($imageUrls, 'signature_photos');
-    exit;
 }
 ?>
 
@@ -93,7 +107,8 @@ if (isset($_POST['downloadSignaturePhotos'])) {
     <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.25/css/jquery.dataTables.css">
     <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/buttons/2.0.0/css/buttons.dataTables.min.css">
     <style>
-        body {
+    /* Your CSS styles here */
+    body {
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
@@ -225,6 +240,7 @@ if (isset($_POST['downloadSignaturePhotos'])) {
     </style>
 </head>
 <body>
+    <!-- Your HTML content here -->
     <div class="sidebar">
         <?php include 'sidebar.php'; ?> 
     </div>
@@ -283,7 +299,31 @@ if (isset($_POST['downloadSignaturePhotos'])) {
             </thead>
             <tbody>
                 <?php
+                // Constructing the SQL query
                 $sql = "SELECT * FROM households";
+
+                // Add search conditions for all parameters except name
+                $searchConditions = array();
+                foreach ($_GET as $key => $value) {
+                    if (!empty($value) && $key !== 'name') {
+                        $searchConditions[] = "$key='$value'";
+                    }
+                }
+
+                // Add search condition for name separately
+                if (!empty($_GET['name'])) {
+                    $name = $_GET['name'];
+                    // Assuming 'name' is a varchar field, use LIKE for partial matching
+                    $searchConditions[] = "name LIKE '%$name%'";
+                }
+
+                // Combining all search conditions
+                if (!empty($searchConditions)) {
+                    $sql .= " WHERE " . implode(" AND ", $searchConditions);
+                }
+
+                echo "SQL Query: $sql"; // Debugging output
+
                 $result = $conn->query($sql);
                 if ($result->num_rows > 0) {
                     while ($row = $result->fetch_assoc()) {
@@ -314,10 +354,9 @@ if (isset($_POST['downloadSignaturePhotos'])) {
         </table>
         <!-- Download Images Buttons -->
         <form action="" method="POST">
-    <button type="submit" name="downloadUserPhotos" class="download-btn user-photos">Download User Photos</button>
-    <button type="submit" name="downloadSignaturePhotos" class="download-btn signature-photos">Download Signature Photos</button>
-</form>
-
+            <button type="submit" name="downloadUserPhotos" class="download-btn user-photos">Download User Photos</button>
+            <button type="submit" name="downloadSignaturePhotos" class="download-btn signature-photos">Download Signature Photos</button>
+        </form>
     </div>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.js"></script>
@@ -325,37 +364,30 @@ if (isset($_POST['downloadSignaturePhotos'])) {
     <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/buttons/2.0.0/js/buttons.html5.min.js"></script>
     <script>
         $(document).ready( function () {
-        $('#householdsTable').DataTable({
-            dom: 'Bfrtip', 
-            buttons: [
-                {
-                    extend: 'csvHtml5', 
-                    dateFormat: 'dd-mm-yyyy',
-                    customize: function (csv) {
-                        // Replace image URLs with file paths
-                        var rows = csv.split('\n');
-                        for (var i = 1; i < rows.length; i++) {
-                            var cells = rows[i].split(',');
-                            // Replace user photo URL
-                            cells[13] = 'user_photos/' + cells[13].split('/').pop();
-                            // Replace signature URL
-                            cells[14] = 'signature_photos/' + cells[14].split('/').pop();
-                            rows[i] = cells.join(',');
+            $('#householdsTable').DataTable({
+                dom: 'Bfrtip', 
+                buttons: [
+                    {
+                        extend: 'csvHtml5', 
+                        dateFormat: 'dd-mm-yyyy',
+                        customize: function (csv) {
+                            // Replace image URLs with file paths
+                            var rows = csv.split('\n');
+                            for (var i = 1; i < rows.length; i++) {
+                                var cells = rows[i].split(',');
+                                // Replace user photo URL
+                                cells[13] = 'user_photos/' + cells[13].split('/').pop();
+                                // Replace signature URL
+                                cells[14] = 'signature_photos/' + cells[14].split('/').pop();
+                                rows[i] = cells.join(',');
+                            }
+                            return rows.join('\n');
                         }
-                        return rows.join('\n');
                     }
-                }
-            ],
-            searching: false
+                ],
+                searching: false
+            });
         });
-    });
-        function downloadUserPhotos() {
-    window.location.href = 'downloadUserPhotos.php';
-}
-
-function downloadSignaturePhotos() {
-    window.location.href = 'downloadSignaturePhotos.php';
-}
     </script>
 </body>
 </html>
