@@ -159,7 +159,7 @@
 
                 if (isset($_GET['search'])) {
                     $search = $_GET['search'];
-                    $sql = "SELECT * FROM households WHERE 
+                    $sql = "SELECT * FROM data WHERE 
                             name LIKE '%$search%' OR 
                             email LIKE '%$search%' OR 
                             gender LIKE '%$search%' OR 
@@ -170,9 +170,9 @@
                             district LIKE '%$search%' OR 
                             knowsFirstAid LIKE '%$search%' OR 
                             hasCprTraining LIKE '%$search%' OR 
-                            published_date LIKE '%$search%'";
+                            date LIKE '%$search%'";
                 } else {
-                    $sql = "SELECT * FROM households";
+                    $sql = "SELECT * FROM data";
                 }
 
                 $result = $conn->query($sql);
@@ -193,9 +193,9 @@
                                 <td>{$row['district']}</td>
                                 <td>{$row['knowsFirstAid']}</td>
                                 <td>{$row['hasCprTraining']}</td>
-                                <td>{$row['userPhoto']}</td>
-                                <td>{$row['signature']}</td>
-                                <td>{$row['published_date']}</td>
+                                <td><a href={$row['userPhoto']} target='_blank'>View Photo</a></td>
+                                <td><a href={$row['signature']} target='_blank'>View Signature</a></td>
+                                <td>{$row['date']}</td>
                             </tr>";
                     }
                 } else {

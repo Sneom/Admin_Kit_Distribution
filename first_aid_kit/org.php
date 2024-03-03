@@ -2,7 +2,7 @@
 include 'config.php'; 
 
 
-$sql = "SELECT district, COUNT(*) AS kits_given FROM households GROUP BY district";
+$sql = "SELECT district, COUNT(*) AS kits_given FROM data GROUP BY district";
 $result = $conn->query($sql);
 
 $data = array();
@@ -24,7 +24,7 @@ if ($result->num_rows > 0) {
 }
 
 
-$sqlDistinctDistricts = "SELECT DISTINCT district FROM households";
+$sqlDistinctDistricts = "SELECT DISTINCT district FROM data";
 $resultDistinctDistricts = $conn->query($sqlDistinctDistricts);
 
 

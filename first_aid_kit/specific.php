@@ -1,13 +1,10 @@
 <?php
 include 'config.php'; 
 
-$today = date("Y-m-d");
-
-
 $search = isset($_GET['search']) ? $_GET['search'] : '';
+$date = isset($_GET['date']) ? $_GET['date'] : date("Y-m-d");
 
-$sql = "SELECT district, COUNT(*) AS kits_given FROM households WHERE DATE(published_date) = '$today'";
-
+$sql = "SELECT district, COUNT(*) AS kits_given FROM data WHERE DATE(date) = '$date'";
 
 if (!empty($search)) {
     $sql .= " AND (district LIKE '%$search%')";
@@ -114,20 +111,28 @@ if ($result->num_rows > 0) {
             border-radius: 4px;
             cursor: pointer;
         }
+        
+        .date-input {
+            padding: 10px;
+            margin-right: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+            width: 180px; 
+            font-size: 14px; 
+        }
     </style>
 </head>
 <body>
     <?php include 'sidebar.php'; ?> 
 
     <div class="content">
-        <h1>Kits Given Today by District</h1>
         <form action="logout.php" method="POST">
             <button class="logout-btn" type="submit" name="logout"><i class="fas fa-sign-out-alt"></i> Logout</button>
         </form>
-        
-        <!-- Search container -->
         <div class="search-container">
             <form method="GET">
+                <input type="date" name="date" class="date-input" value="<?= $date ?>">
                 <input type="text" name="search" placeholder="Search...">
                 <button type="submit">Search</button>
             </form>
@@ -144,7 +149,7 @@ if ($result->num_rows > 0) {
             <tbody>
                 <?php foreach ($data as $row): ?>
                     <tr>
-                        <td><?= $today ?></td>
+                        <td><?= $date ?></td>
                         <td><?= $row['district'] ?></td>
                         <td><?= $row['kits_given'] ?></td>
                     </tr>

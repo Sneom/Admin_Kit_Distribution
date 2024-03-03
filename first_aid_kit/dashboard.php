@@ -98,20 +98,59 @@
         .logout-btn i {
             margin-right: 5px;
         }
+        
+        .search-container {
+            margin-bottom: 20px;
+        }
+
+        .search-container input[type=text] {
+            padding: 10px;
+            margin-right: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        .search-container button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .sidebar {
+            width: 200px;
+            background-color: #333;
+            color: #fff;
+            overflow: hidden;
+        }
+
+        .sidebar-header {
+            padding: 10px;
+            text-align: center;
+            background-color: #222;
+        }
     </style>
 </head>
 <body>
+   
     <div class="dashboard-container">
+         <div class="sidebar">
         <?php include 'sidebar.php'; ?> 
+    </div>
         <div class="content">
             <h1>Households Data</h1>
             <form action="logout.php" method="POST">
                 <button class="logout-btn" type="submit" name="logout"><i class="fas fa-sign-out-alt"></i> Logout</button>
             </form>
+            <div class="search-container">
             <form method="GET">
-                <input type="text" name="search" placeholder="Search by district">
+                <input type="text" name="search" placeholder="Search...">
                 <button type="submit">Search</button>
             </form>
+        </div>
             <table id="householdsTable">
                 <thead>
                     <tr>
@@ -131,7 +170,7 @@
 
                     if (isset($_GET['search'])) {
                         $search = $_GET['search'];
-                        $sql = "SELECT * FROM households WHERE 
+                        $sql = "SELECT * FROM data WHERE 
                                 name LIKE '%$search%' OR 
                                 email LIKE '%$search%' OR 
                                 gender LIKE '%$search%' OR 
@@ -142,9 +181,9 @@
                                 district LIKE '%$search%' OR 
                                 knowsFirstAid LIKE '%$search%' OR 
                                 hasCprTraining LIKE '%$search%' OR 
-                                published_date LIKE '%$search%'";
+                                date LIKE '%$search%'";
                     } else {
-                        $sql = "SELECT * FROM households";
+                        $sql = "SELECT * FROM data";
                     }
 
                     $result = $conn->query($sql);
@@ -158,7 +197,7 @@
                                     <td>{$row['mobileNo']}</td>
                                     <td>{$row['familyMembers']}</td>
                                     <td>{$row['district']}</td>
-                                    <td>{$row['published_date']}</td>
+                                    <td>{$row['date']}</td>
                                     <td><a href=\"dashboard.php?delete={$row['id']}\">Delete</a></td>
                                 </tr>";
                         }
@@ -168,7 +207,7 @@
 
                     if (isset($_GET['delete'])) {
                         $deleteId = $_GET['delete'];
-                        $deleteSql = "DELETE FROM households WHERE id = $deleteId";
+                        $deleteSql = "DELETE FROM data WHERE id = $deleteId";
 
                         if ($conn->query($deleteSql) === TRUE) {
                             echo "<script>alert('Record deleted successfully');</script>";

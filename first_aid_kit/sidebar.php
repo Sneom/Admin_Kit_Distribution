@@ -9,6 +9,7 @@
             height: 100%;
             margin: 0;
             padding: 0;
+            font-family: Arial, sans-serif;
         }
 
         .sidebar {
@@ -25,6 +26,14 @@
             padding: 10px;
             text-align: center;
             background-color: #222;
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+
+        .sidebar-header img {
+            width: 176px; 
+            height: auto; 
+            margin-bottom: 10px;
         }
 
         .tabs {
@@ -40,26 +49,31 @@
 
         .tabs li a {
             display: block;
-            padding: 10px 20px;
+            padding: 15px 20px;
             text-decoration: none;
             color: #fff;
+            transition: background-color 0.3s ease;
         }
 
         .tabs li a:hover {
             background-color: #555;
         }
+
+       
     </style>
 </head>
 <body>
     <div class="sidebar">
         <div class="sidebar-header">
-            <a href="dashboard.php" style="color: white; text-decoration: none;">Admin Dashboard</a> 
+            <img src="BWF_logo.jpeg" alt="BWF Logo">
         </div>
         
         <ul class="tabs">
-            <li><a href="org.php">Tab 1</a></li>
-            <li><a href="specific.php">Tab 2</a></li> 
-            <li><a href="export.php">Tab 3</a></li>
+            
+            <li><a href="dashboard.php">Dashboard</a></li>
+            <li><a href="specific.php">Kits Delivered</a></li> 
+            <li><a href="export.php">Data / Export CSV</a></li>
+            <li><a href="org.php">Graph</a></li>
         </ul>
     </div>
 </body>
