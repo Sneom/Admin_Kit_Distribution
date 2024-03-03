@@ -1,21 +1,21 @@
 <?php
 include 'config.php';
 
-
+// Function to download images
 function downloadImages($imageUrls, $folderName) {
-    
+    // Create folder if not exists
     if (!is_dir($folderName)) {
         mkdir($folderName);
     }
 
-    
+    // Loop through image URLs and download them
     foreach ($imageUrls as $imageUrl) {
         $fileName = basename($imageUrl);
         $filePath = $folderName . '/' . $fileName;
         file_put_contents($filePath, file_get_contents($imageUrl));
     }
 
-   
+    // Zip the folder
     $zipFile = $folderName . '.zip';
     $zip = new ZipArchive();
     if ($zip->open($zipFile, ZipArchive::CREATE | ZipArchive::OVERWRITE) === TRUE) {
@@ -34,21 +34,21 @@ function downloadImages($imageUrls, $folderName) {
         $zip->close();
     }
 
-   
+    // Delete the folder after zipping
     array_map('unlink', glob("$folderName/*"));
     rmdir($folderName);
 
-    
+    // Download the zip file
     header('Content-Type: application/zip');
     header('Content-disposition: attachment; filename=' . $zipFile);
     header('Content-Length: ' . filesize($zipFile));
     readfile($zipFile);
 
-    
+    // Delete the zip file after download
     unlink($zipFile);
 }
 
-
+// Check if download button is clicked
 if (isset($_POST['downloadUserPhotos'])) {
     $sql = "SELECT userPhoto FROM households";
     $result = $conn->query($sql);
@@ -56,7 +56,8 @@ if (isset($_POST['downloadUserPhotos'])) {
     $imageUrls = array();
     while ($row = $result->fetch_assoc()) {
         if (!empty($row['userPhoto'])) {
-            $imageUrls[] = $row['userPhoto'];
+            // Extract filename from the URL and add to the list
+            $imageUrls[] = basename($row['userPhoto']);
         }
     }
 
@@ -64,7 +65,7 @@ if (isset($_POST['downloadUserPhotos'])) {
     exit;
 }
 
-
+// Check if download button is clicked
 if (isset($_POST['downloadSignaturePhotos'])) {
     $sql = "SELECT signature FROM households";
     $result = $conn->query($sql);
@@ -72,7 +73,8 @@ if (isset($_POST['downloadSignaturePhotos'])) {
     $imageUrls = array();
     while ($row = $result->fetch_assoc()) {
         if (!empty($row['signature'])) {
-            $imageUrls[] = $row['signature'];
+            // Extract filename from the URL and add to the list
+            $imageUrls[] = basename($row['signature']);
         }
     }
 
@@ -80,6 +82,7 @@ if (isset($_POST['downloadSignaturePhotos'])) {
     exit;
 }
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -197,21 +200,28 @@ if (isset($_POST['downloadSignaturePhotos'])) {
             border-radius: 4px;
             cursor: pointer;
         }
-
         .download-btn {
-            padding: 10px 20px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            margin-right: 10px; 
-        }
+        padding: 10px 20px;
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        margin-right: 10px; /* Adjust as needed */
+    }
 
-        .download-btn:hover {
-            background-color: #45a049;
-        }
-        
+    .download-btn:hover {
+        background-color: #45a049;
+    }
+
+    /* Additional styles for download buttons */
+    .download-btn.user-photos {
+        background-color: #007bff; /* Change color for user photos */
+    }
+
+    .download-btn.signature-photos {
+        background-color: #007bff; /* Change color for signature photos */
+    }
     </style>
 </head>
 <body>
@@ -291,8 +301,8 @@ if (isset($_POST['downloadSignaturePhotos'])) {
                                 <td>{$row['district']}</td>
                                 <td>{$row['knowsFirstAid']}</td>
                                 <td>{$row['hasCprTraining']}</td>
-                                <td><a href={$row['userPhoto']} class='download-btn' download>Download Photo</a></td>
-                                <td><a href={$row['signature']} class='download-btn' download>Download Signature</a></td>
+                                <td><a href={$row['userPhoto']} target='_blank'>{$row['userPhoto']}</a></td>
+                                <td><a href={$row['signature']} target='_blank'>{$row['signature']}</a></td>
                                 <td>" . (isset($row['published_date']) ? $row['published_date'] : '') . "</td>
                             </tr>";
                     }
@@ -302,11 +312,12 @@ if (isset($_POST['downloadSignaturePhotos'])) {
                 ?>
             </tbody>
         </table>
-      
-        <div>
-            <a href="#" class="download-btn" onclick="downloadUserPhotos()">Download User Photos</a>
-            <a href="#" class="download-btn" onclick="downloadSignaturePhotos()">Download Signature Photos</a>
-        </div>
+        <!-- Download Images Buttons -->
+        <form action="" method="POST">
+    <button type="submit" name="downloadUserPhotos" class="download-btn user-photos">Download User Photos</button>
+    <button type="submit" name="downloadSignaturePhotos" class="download-btn signature-photos">Download Signature Photos</button>
+</form>
+
     </div>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.js"></script>
@@ -314,25 +325,37 @@ if (isset($_POST['downloadSignaturePhotos'])) {
     <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/buttons/2.0.0/js/buttons.html5.min.js"></script>
     <script>
         $(document).ready( function () {
-            $('#householdsTable').DataTable({
-                dom: 'Bfrtip', 
-                buttons: [
-                    {
-                        extend: 'csvHtml5', 
-                        dateFormat: 'dd-mm-yyyy' 
+        $('#householdsTable').DataTable({
+            dom: 'Bfrtip', 
+            buttons: [
+                {
+                    extend: 'csvHtml5', 
+                    dateFormat: 'dd-mm-yyyy',
+                    customize: function (csv) {
+                        // Replace image URLs with file paths
+                        var rows = csv.split('\n');
+                        for (var i = 1; i < rows.length; i++) {
+                            var cells = rows[i].split(',');
+                            // Replace user photo URL
+                            cells[13] = 'user_photos/' + cells[13].split('/').pop();
+                            // Replace signature URL
+                            cells[14] = 'signature_photos/' + cells[14].split('/').pop();
+                            rows[i] = cells.join(',');
+                        }
+                        return rows.join('\n');
                     }
-                ],
-                searching: false
-            });
+                }
+            ],
+            searching: false
         });
-
+    });
         function downloadUserPhotos() {
-            window.location.href = 'downloadUserPhotos.php';
-        }
+    window.location.href = 'downloadUserPhotos.php';
+}
 
-        function downloadSignaturePhotos() {
-            window.location.href = 'downloadSignaturePhotos.php';
-        }
+function downloadSignaturePhotos() {
+    window.location.href = 'downloadSignaturePhotos.php';
+}
     </script>
 </body>
 </html>
